@@ -5,6 +5,7 @@ const {
 } = require("../helper/utils");
 const Cart = require("../model/cart");
 const Order = require("../model/order");
+const ObjectId = require('mongodb').ObjectId;
 
 exports.createOrder = async (request, response) => {
     try {
@@ -136,7 +137,8 @@ exports.loadById = async (request, response)=>{
 exports.loadOrders = async (request,response)=>{
     try {
 
-        let {limit,skip,searchKey} = request.body;
+        let {limit,skip,searchKey,filters={}} = request.body || {};
+        let {brand,category} = filters||{};
 
         let userData = request.userData;
 
@@ -147,6 +149,8 @@ exports.loadOrders = async (request,response)=>{
             $or: [
                 { "orderId": regex },
                 { "orderStatus": regex },
+                {"product.name":regex},
+                {"product.description":regex}
                
             ]
         }
@@ -155,10 +159,12 @@ exports.loadOrders = async (request,response)=>{
 
         Query = {
             ...(searchKey && searchQuery),
-            // ...(userData.role == "customer" &&{"createdBy._id":userData._id})
+            ...(userData.role == "customer" &&{"createdBy._id":ObjectId(userData._id)}),
+            
         }
+        
 
-        console.log("Query",Query)
+
 
         let orderFound = await Order.aggregate([
 
@@ -180,18 +186,6 @@ exports.loadOrders = async (request,response)=>{
                     as: "product"
                 }
             },
-
-
-            // { $unwind: "$brand" },
-            // {
-            //     $lookup: {
-            //         from: "categories",
-            //         localField: "category",
-            //         foreignField: "_id",
-            //         as: "category"
-            //     }
-            // },
-            // { $unwind: "$category" },
               
             { $match: Query },
             {$sort:{createdOn:-1}}

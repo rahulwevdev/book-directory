@@ -3,6 +3,8 @@ const Product = require("../model/product");
 const Brand = require("../model/brand");
 const Category = require("../model/categories");
 const {slugify} = require("../helper/utils");
+const ObjectId = require('mongodb').ObjectId;
+
 exports.addProduct = async (request,response)=>{
     try {
 
@@ -185,7 +187,7 @@ exports.loadBySlug =  async (request,response)=>{
 exports.loadProducts = async (request,response)=>{
     try {
 
-        let {limit,skip,searchKey} = request.query;
+        let {limit,skip,searchKey,brand,category,minPrice,maxPrice} = request.query || {};
 
         let regex = { $regex: searchKey, $options: "$i" }
         let searchQuery = {
@@ -196,17 +198,22 @@ exports.loadProducts = async (request,response)=>{
                 {slug:regex},
                 { sku: regex },
                 {"category.name":regex},
-                { "category.description": regex }
+                { "category.description": regex },
             ]
+
         }
 
         let Query = {}
 
         Query = {
-            ...(searchKey && searchQuery)
+            ...(searchKey && searchQuery),
+            ...(brand && {"brand._id":ObjectId(brand)}),
+            ...(category && {"category._id":ObjectId(category)}),
+            ...(minPrice && maxPrice && { price: { $gte: +minPrice, $lte: +maxPrice } })
         }
 
-        console.log("Query",Query)
+
+     
 
         let productFound = await Product.aggregate([
 
