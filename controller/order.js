@@ -220,6 +220,7 @@ exports.loadOrders = async (request,response)=>{
             message:"success",
             data:orderFound,
             total:totalProducts
+            
         })
 
         
