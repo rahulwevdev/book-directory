@@ -120,6 +120,33 @@ exports.addProduct = async (request,response)=>{
     }
 }
 
+exports.uploadImages = async (request,response)=>{
+    try {
+
+        let {productId} = request.body
+        let images = request.files;
+        let productImages = images.map(item=> item.path);
+
+        let updateProduct = await Product.findOneAndUpdate(
+            {_id:productId},
+            {images:productImages},
+            {new:true}
+        ).lean();
+
+        return response.status(200).json({
+            success:true,
+            message:"successfully upload images "
+        })
+        
+    } catch (error) {
+        console.log("error", error);
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
 exports.loadById = async (request, response)=>{
     try {
 

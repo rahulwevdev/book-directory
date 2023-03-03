@@ -28,6 +28,7 @@ const productSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'brand'
     },
+    images:[String],
     mrp:{
         type:Number,
         require:true
