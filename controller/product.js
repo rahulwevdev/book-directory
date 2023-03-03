@@ -179,6 +179,44 @@ exports.loadById = async (request, response)=>{
     }
 }
 
+exports.updateProduct = async (request, response)=>{
+    try {
+
+        let {productId} = request.body;
+
+        delete request.body.productId;
+
+
+
+
+        let productUpdate = await Product.findOneAndUpdate(
+            {_id:productId},
+            request.body,
+            {new:true}
+            )
+        .lean();
+
+        if(!productUpdate){
+            return response.status(404).json({
+                success: false,
+                message: "product not found"
+            }) 
+        }
+        return response.status(200).json({
+            success: true,
+            message: "successfully product updated",
+            data:productUpdate
+        }) 
+        
+    } catch (error) {
+        console.log("error", error);
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
 exports.loadBySlug =  async (request,response)=>{
     try {
 

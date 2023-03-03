@@ -6,7 +6,8 @@ const {
     loadById,
     loadBySlug,
     loadProducts,
-    uploadImages
+    uploadImages,
+    updateProduct
 } = require("../controller/product");
 const {auth} = require("../middleware/auth")
 const multer = require("multer");
@@ -29,6 +30,8 @@ router.post("/add-product",auth("admin"),addProduct);
 router.post("/upload-product-images",uploadImage.array('image',4),auth("customer"),uploadImages);
 
 router.get("/load-product-by-id/:id",auth("admin"),loadById);
+
+router.put("/update-product",auth("admin"),updateProduct);
 
 router.get("/load-product-by-slug/:slug",loadBySlug);
 
