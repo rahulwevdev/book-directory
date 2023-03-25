@@ -4,11 +4,12 @@ const app = express();
 const cors = require("cors")
 require('dotenv').config();
 require("./config/db");
-const multer = require("multer")
+const multer = require("multer");
+const bodyParser = require("body-parser");
 
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors());
 app.use(function (request, response, next) {
@@ -38,30 +39,20 @@ app.use('/static', express.static(path.join(__dirname, 'public')))
 
 
 const { request } = require("http");
-const user = require("./router/user");
-const admin = require("./router/admin");
-const cart = require("./router/cart");
-const brand = require("./router/brand");
-const category = require("./router/category");
-const product = require("./router/product");
-const order = require("./router/order");
-
+const user = require("./router/auth");
+const book = require("./router/books");
 // use router
 app.use("/auth",auth);
-app.use("/user",user);
-app.use("/admin",admin);
-app.use("/cart",cart);
-app.use("/brand",brand);
-app.use("/category",category);
-app.use("/product",product);
-app.use("/order",order);
+app.use("/books",book)
+
 
 
 app.use(express.static(__dirname + '/public'));
 
 app.get("/",async(request,response)=>{
   console.log("start");
-  response.render("index.ejs");
+  return response.send("hello world")
+  
 })
 
 

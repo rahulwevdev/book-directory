@@ -10,12 +10,12 @@ const {sendingEmail} = require("../helper/utils");
 exports.register = async(request,response)=>{
     try {
 
-        let {name,email,mobile,password ,confirmPassowrd, gender,role} = request.body;
+        let {name,email,mobile,password ,confirmPassowrd} = request.body;
         let message = "Invalid details !"
 
-        let isValidName = isValidEmail = isValidMobile = isValidPassword = isValidGender = true;
+        let isValidName = isValidEmail = isValidMobile = isValidPassword  = true;
 
-        if(!name || !email || !mobile || !password || !confirmPassowrd || !gender){
+        if(!name || !email || !mobile || !password || !confirmPassowrd){
             return response.status(403).json({
                 success:false,
                 message:"all field required"
@@ -42,13 +42,8 @@ exports.register = async(request,response)=>{
             isValidPassword? message : message +=" password"
         }
 
-        if(gender){
-            
-            isValidGender = validation.gender(gender);
-            isValidGender? message : message +=" gender"
-        }
 
-        if(!isValidName || !isValidEmail || !isValidMobile || !isValidPassword || !isValidGender){
+        if(!isValidName || !isValidEmail || !isValidMobile || !isValidPassword){
             return response.json({
                 success:false,
                 message:message
@@ -89,7 +84,6 @@ exports.register = async(request,response)=>{
             name: name,
             email: email,
             mobile: mobile,
-            role,
             password: hashPassword
         })
 
@@ -137,61 +131,7 @@ exports.register = async(request,response)=>{
     }
 }
 
-exports.verifyEmail = async (request,response)=>{
-    try {
 
-        let {email, token} = request.query;
-
-        
-        // check user and token.............
-        let userFound = await user.findOne({email:email,emailVerifyToken:token}).lean();
-        
-        
-
-        if(!userFound){
-            return response.status(404).json({
-                success:false,
-                message:"not found"
-            })
-        }
-
-        if(userFound && userFound.isEmailVerified){
-            return response.status(403).json({
-                success:false,
-                message:"link expired"
-            })
-        }
-
-        // update email is verified...........
-
-        let updateUser = await user.findOneAndUpdate(
-            {email:email},
-            {isEmailVerified:true,emailVerifyToken:null},
-            {new:true}
-        )
-
-        if(!updateUser){
-            return response.status(500).json({
-                success:false,
-                message:"internal server error"
-            })
-        }
-
-        return response.status(200).json({
-            success:true,
-            message:"email verified successfully"
-        })
-
-
-        
-    } catch (error) {
-        console.log(error)
-        return response.status(404).json({
-            success:false,
-            message:error.message
-        })
-    }
-}
 
 exports.login = async(request,response)=>{
     try {
@@ -300,130 +240,3 @@ exports.logout =  async (request,response)=>{
 }
 
 
-exports.forgotPassword = async (request , response)=>{
-    try {
-
-        let {email} = request.body;
-
-        // check email is exist for not...........
-        let userFound = await user.findOne({email}).lean();
-
-        if(!userFound){
-            return response.status(403).json({
-                success:false,
-                message:"email not found"
-            })
-        }
-
-        // send email for forgot password to user..............
-        let res = await sendingEmail(userFound,"forgot-password");
-
-        if(res == "error"){
-            return response.status(500).json({
-                success:false,
-                message:"Internal server error"
-            })
-        }
-        else{
-            return response.json({
-                success:true,
-                message:"link sent to registered email"
-            })
-        }
-
-        
-
-
-        
-    } catch (error) {
-        console.log("error",error)
-        return response.status(500).json({
-            success:false,
-            message:error.message
-        })
-    }
-}
-
-
-exports.resetPassword = async (request , response)=>{
-    try {
-
-        let {email,token} = request.query;
-        let {password,confirmPassword} = request.body;
-
-        // CHECK PASSWORD FORMAT.............
-
-        if(!validation.password(password)){
-            return response.status(403).json({
-                success:false,
-                message:"password length should be greater than 6 and combination of string ,number and a special character"
-            })
-        }
-
-        if(password != confirmPassword){
-            return response.status(403).json({
-                success:false,
-                message:"password doest not match connfirm password"
-            })
-        }
-
-
-        // check user and token.............
-        let userFound = await user.findOne({email:email,forgetPasswordToken:token}).lean();   
-        
-
-        if(!userFound){
-            return response.status(404).json({
-                success:false,
-                message:"not found"
-            })
-        }
-
-        // check time stamp................
-        let tokenTime = new Date(userFound.forgetPasswordTokenTimeStamp)
-        let currentTime = Date.now();
-        let timeDiff = Math.floor((currentTime - tokenTime.getTime())/(1000));
-
-       
-        
-        if(timeDiff >600){
-            return response.status(410).json({
-                success:false,
-                message:"time expired please do again forgot password on website"
-            })
-        }
-        
-
-        // UPDATE NEW PASSWORD...........
-
-        let salt = await bcrypt.genSaltSync(10);
-        let hashPassword = await bcrypt.hashSync(password,salt);
-
-        let updateUser = await user.findOneAndUpdate(
-            {email},
-            {password:hashPassword, forgetPasswordToken:null},
-            {new:true}
-        )
-
-        if(!updateUser){
-            return response.status(500).json({
-                success:false,
-                message:"Internal server error"
-            })
-        }
-
-        else{
-            return response.status(200).json({
-                success:true,
-                message:"successfully update password"
-            })
-        }
-        
-    } catch (error) {
-        console.log("error",error)
-        return response.status(500).json({
-            success:false,
-            message:error.message
-        })
-    }
-}

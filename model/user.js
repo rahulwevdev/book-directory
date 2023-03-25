@@ -15,13 +15,7 @@ const userSchema = new mongoose.Schema({
     role:{
         type:String
     },
-    isEmailVerified:{
-        type:Boolean,
-        default:false
-    },
-    emailVerifyToken:{
-        type:String
-    },
+   
     mobile:{
         type: String,
         require: true,
@@ -33,19 +27,12 @@ const userSchema = new mongoose.Schema({
         default:"male",
         require:true
     },
-    forgetPasswordToken:{
-        type : String
-    },
-    forgetPasswordTokenTimeStamp:{
-        type :Date
-    },
+   
     password:{
         type:String
     },
     token:[],
-    profilePhoto:{
-        type:String
-    },
+   
     registerOn:{
         type:Date,
         default:Date.now()
@@ -54,29 +41,6 @@ const userSchema = new mongoose.Schema({
         type:Boolean,
         default:true
     },
-    
-    paymentDetails:{
-        upiNumber:{
-            type:String
-        },
-        accountNumber:{
-            type:String
-        },
-        ifscCode:{
-            type:String
-        },
-        accountName:String,
-        bankAccountName:String,
-        creditCardNumber:String
-    },
-    address:{
-        houseNo:String,
-        landMark:String,
-        city:String,
-        Pincode:String,
-        state:String,
-        country:String
-    }
 })
 
 userSchema.methods.generateAuthToken = async function(next){

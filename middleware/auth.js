@@ -3,7 +3,7 @@ const { response } = require("..");
 const user = require("../model/user");
 require('dotenv').config();
 
-exports.auth = (...role) => {
+exports.auth = () => {
     return async (request, response, next) => {
 
         try {
@@ -40,14 +40,7 @@ exports.auth = (...role) => {
                 })
             }
 
-            if (!role.includes(userFound.role)) {
-                return response.status(400).json({
-                    success: false,
-                    message: "Access denied"
-                })
-            }
-
-            request.userData = {...userDetails,...{role:userFound.role}}
+            request.userData = userFound;
 
             next()
 
